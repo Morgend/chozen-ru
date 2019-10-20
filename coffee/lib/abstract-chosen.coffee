@@ -1,3 +1,44 @@
+class window.AbstractChosenStringFixer
+  fix: (value) -> value
+
+class window.KeyboardMistypeFixer extends window.AbstractChosenStringFixer
+  @LATIN_KEYBOARD = [
+      'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']',
+      'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'',
+      'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.'
+  ];
+
+  @RUSSIAN_KEYBOARD = [
+    'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ',
+    'ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э',
+    'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю'
+  ];
+
+  constructor: (keys, replacement) ->
+    super()
+    @keys = keys
+    @replacement = replacement
+
+  fix: (value) ->
+    lower = value.toLocaleLowerCase();
+    result = '';
+    
+    i = 0
+    lastStep = lower.length
+    while i < lower.length
+        index = @keys.indexOf(lower[i])
+        
+        if index < 0
+            result += value[i]
+        else if lower[i] != value[i]
+            result += @replacement[index].toLocaleUpperCase()
+        else
+            result += @replacement[index]
+        i++
+    
+    result
+  
+
 class AbstractChosen
 
   constructor: (@form_field, @options={}) ->
@@ -36,6 +77,7 @@ class AbstractChosen
     @max_shown_results = @options.max_shown_results || Number.POSITIVE_INFINITY
     @case_sensitive_search = @options.case_sensitive_search || false
     @hide_results_on_select = if @options.hide_results_on_select? then @options.hide_results_on_select else true
+    @fixer = if @options.fixer? then @options.fixer else null
 
   set_default_text: ->
     if @form_field.getAttribute("data-placeholder")
@@ -159,8 +201,14 @@ class AbstractChosen
     else
       this.results_show()
 
+  fix_value: (value) ->
+    if @fixer?
+      return @fixer.fix(value)
+    value
+
   winnow_results: (options) ->
     this.no_results_clear()
+    this.fix_search_value()
 
     results = 0
 

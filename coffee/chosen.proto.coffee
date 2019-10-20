@@ -521,3 +521,6 @@ class @Chosen extends AbstractChosen
       element.dispatchEvent(evt)
     else # Old IE:
       element.fireEvent("on#{eventType}", document.createEventObject());
+
+  fix_search_value: ->
+    @search_field.value = this.fix_value(@search_field.value)

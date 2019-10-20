@@ -511,3 +511,6 @@ class Chosen extends AbstractChosen
   trigger_form_field_change: (extra) ->
     @form_field_jq.trigger "input", extra
     @form_field_jq.trigger "change", extra
+
+  fix_search_value: ->
+    @search_field.val(this.fix_value(@search_field.val()))
